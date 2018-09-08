@@ -1,0 +1,8 @@
+#blocklyEditor {
+  width: 800px;
+  height: 600px;
+}
+
+#toolbox {
+  display: none;
+}
