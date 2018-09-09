@@ -61,8 +61,53 @@ var blockDefinitions = {
       return [code, Blockly.VRMath.ORDER_ATOMIC];
     }
   },
+  gensym: {
+    configuration: {
+      colour: expressionColor,
+      output: 'String',
+      message0: 'gensym',
+    },
+    generator: function(block) {
+      var code = 'gensym';
+      return [code, Blockly.VRMath.ORDER_ATOMIC];
+    }
+  },
 
   // Lists and arrays
+  word: {
+    configuration: {
+      colour: expressionColor,
+      output: 'String',
+      message0: 'word %1 %2',
+      mutator: 'setArity',
+      extensions: [
+        'addArityMenuItem',
+      ],
+      args0: [
+        { 
+          type: 'input_value',
+          check: 'String',
+          name: 'element0',
+        },
+        { 
+          type: 'input_value',
+          check: 'String',
+          name: 'element1',
+        },
+      ]
+    },
+    vrmath: {
+      arity: 2,
+      elementType: 'String',
+    },
+    generator: function(block) {
+      var tokens = ['word'];
+      for (var i = 0; i < block.vrmath.arity; ++i) {
+        tokens.push(Blockly.VRMath.valueToCode(block, 'element' + i, Blockly.VRMath.ORDER_COLLECTION));
+      }
+      return [tokens.join(' '), Blockly.VRMath.ORDER_NONE];
+    }
+  },
   list: {
     configuration: {
       colour: expressionColor,
@@ -91,6 +136,191 @@ var blockDefinitions = {
       for (var i = 0; i < block.vrmath.arity; ++i) {
         tokens.push(Blockly.VRMath.valueToCode(block, 'element' + i, Blockly.VRMath.ORDER_COLLECTION));
       }
+      return [tokens.join(' '), Blockly.VRMath.ORDER_NONE];
+    }
+  },
+  sentence: {
+    configuration: {
+      colour: expressionColor,
+      output: 'List',
+      message0: 'sentence %1 %2',
+      mutator: 'setArity',
+      extensions: [
+        'addArityMenuItem',
+      ],
+      args0: [
+        { 
+          type: 'input_value',
+          name: 'element0',
+        },
+        { 
+          type: 'input_value',
+          name: 'element1',
+        },
+      ]
+    },
+    vrmath: {
+      arity: 2
+    },
+    generator: function(block) {
+      var tokens = ['sentence'];
+      for (var i = 0; i < block.vrmath.arity; ++i) {
+        tokens.push(Blockly.VRMath.valueToCode(block, 'element' + i, Blockly.VRMath.ORDER_COLLECTION));
+      }
+      return [tokens.join(' '), Blockly.VRMath.ORDER_NONE];
+    }
+  },
+  array: {
+    configuration: {
+      colour: expressionColor,
+      output: 'Array',
+      message0: 'array %1',
+      args0: [
+        { 
+          type: 'input_value',
+          check: 'Integer',
+          name: 'size',
+        },
+      ]
+    },
+    generator: function(block) {
+      var tokens = ['array'];
+      tokens.push(Blockly.VRMath.valueToCode(block, 'size', Blockly.VRMath.ORDER_ATOMIC));
+      return [tokens.join(' '), Blockly.VRMath.ORDER_NONE];
+    }
+  },
+  listtoarray: {
+    configuration: {
+      colour: expressionColor,
+      output: 'Array',
+      message0: 'listtoarray %1',
+      args0: [
+        { 
+          type: 'input_value',
+          check: 'List',
+          name: 'list',
+        },
+      ]
+    },
+    generator: function(block) {
+      var tokens = ['listtoarray'];
+      tokens.push(Blockly.VRMath.valueToCode(block, 'list', Blockly.VRMath.ORDER_ATOMIC));
+      return [tokens.join(' '), Blockly.VRMath.ORDER_NONE];
+    }
+  },
+  arraytolist: {
+    configuration: {
+      colour: expressionColor,
+      output: 'List',
+      message0: 'arraytolist %1',
+      args0: [
+        { 
+          type: 'input_value',
+          check: 'Array',
+          name: 'array',
+        },
+      ]
+    },
+    generator: function(block) {
+      var tokens = ['arraytolist'];
+      tokens.push(Blockly.VRMath.valueToCode(block, 'array', Blockly.VRMath.ORDER_ATOMIC));
+      return [tokens.join(' '), Blockly.VRMath.ORDER_NONE];
+    }
+  },
+  reverse: {
+    configuration: {
+      colour: expressionColor,
+      output: 'List',
+      message0: 'reverse %1',
+      args0: [
+        { 
+          type: 'input_value',
+          check: 'List',
+          name: 'list',
+        },
+      ]
+    },
+    generator: function(block) {
+      var tokens = ['reverse'];
+      tokens.push(Blockly.VRMath.valueToCode(block, 'list', Blockly.VRMath.ORDER_ATOMIC));
+      return [tokens.join(' '), Blockly.VRMath.ORDER_NONE];
+    }
+  },
+  fput: {
+    configuration: {
+      colour: expressionColor,
+      output: 'List',
+      message0: 'fput thing %1 list %2',
+      args0: [
+        { 
+          type: 'input_value',
+          align: 'RIGHT',
+          name: 'thing',
+        },
+        { 
+          type: 'input_value',
+          align: 'RIGHT',
+          check: 'List',
+          name: 'list',
+        },
+      ]
+    },
+    generator: function(block) {
+      var tokens = ['fput'];
+      tokens.push(Blockly.VRMath.valueToCode(block, 'thing', Blockly.VRMath.ORDER_ATOMIC));
+      tokens.push(Blockly.VRMath.valueToCode(block, 'list', Blockly.VRMath.ORDER_ATOMIC));
+      return [tokens.join(' '), Blockly.VRMath.ORDER_NONE];
+    }
+  },
+  lput: {
+    configuration: {
+      colour: expressionColor,
+      output: 'List',
+      message0: 'lput thing %1 list %2',
+      args0: [
+        { 
+          type: 'input_value',
+          align: 'RIGHT',
+          name: 'thing',
+        },
+        { 
+          type: 'input_value',
+          align: 'RIGHT',
+          check: 'List',
+          name: 'list',
+        },
+      ]
+    },
+    generator: function(block) {
+      var tokens = ['lput'];
+      tokens.push(Blockly.VRMath.valueToCode(block, 'thing', Blockly.VRMath.ORDER_ATOMIC));
+      tokens.push(Blockly.VRMath.valueToCode(block, 'list', Blockly.VRMath.ORDER_ATOMIC));
+      return [tokens.join(' '), Blockly.VRMath.ORDER_NONE];
+    }
+  },
+  combine: {
+    configuration: {
+      colour: expressionColor,
+      output: ['String', 'List'],
+      message0: 'combine %1 %2',
+      args0: [
+        { 
+          type: 'input_value',
+          align: 'RIGHT',
+          name: 'thingA',
+        },
+        { 
+          type: 'input_value',
+          align: 'RIGHT',
+          check: ['List', 'String'],
+          name: 'thingB',
+        },
+      ]
+    },
+    generator: function(block) {
+      var tokens = ['combine'];
+      tokens.push(Blockly.VRMath.valueToCode(block, 'thingA', Blockly.VRMath.ORDER_ATOMIC));
+      tokens.push(Blockly.VRMath.valueToCode(block, 'thingB', Blockly.VRMath.ORDER_ATOMIC));
       return [tokens.join(' '), Blockly.VRMath.ORDER_NONE];
     }
   },
@@ -179,9 +409,6 @@ function triggerArity(block, arity) {
   Blockly.Events.fire(event);
 }
 
-function syncToArity() {
-}
-
 function setup() {
   // Initialize blocks.
   for (var id in blockDefinitions) {
@@ -237,9 +464,12 @@ function setup() {
       // Currently there are fewer than we need. Add missing.
       else if (actualArity < expectedArity) {
         for (var i = actualArity; i < expectedArity; ++i) {
-          var input = this.appendValueInput('element' + i);
+          var input = this.appendValueInput('element' + i, );
           if (i == 0) {
             input.appendField(this.type);
+          }
+          if (this.vrmath.elementType) {
+            input.setCheck(this.vrmath.elementType);
           }
         }
       }
