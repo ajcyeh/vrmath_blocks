@@ -1,6 +1,7 @@
 // https://developers.google.com/blockly/reference/js/Blockly.Block
 
 var workspace = null;
+var allTypes = ['Array', 'List', 'String', 'Integer', 'Real', 'Boolean'];
 
 var expressionColor = 270;
 var statementColor = 180;
@@ -46,7 +47,7 @@ function generateBlock(id, color, returnType, args, isPrefixedById) {
 
   var assemble = null;
   if (returnType) {
-    configuration.output = null;
+    configuration.output = returnType;
     assemble = function(code) {
       return [code, Blockly.VRMath.ORDER_FUNCTION_CALL];
     }
@@ -255,6 +256,57 @@ var blockDefinitions = {
   combine: generateExpression('combine', ['String', 'List'], [
     { id: 'thingA', type: null },
     { id: 'thingB', type: ['String', 'List'] },
+  ]),
+  first: generateExpression('first', 'List', [
+    { id: 'list', type: 'List' },
+  ]),
+  last: generateExpression('last', 'List', [
+    { id: 'list', type: 'List' },
+  ]),
+  butfirst: generateExpression('butfirst', 'List', [
+    { id: 'list', type: 'List' },
+  ]),
+  butlast: generateExpression('butlast', 'List', [
+    { id: 'list', type: 'List' },
+  ]),
+  firsts: generateExpression('firsts', 'List', [
+    { id: 'list', type: 'List' },
+  ]),
+  butfirsts: generateExpression('butfirsts', 'List', [
+    { id: 'list', type: 'List' },
+  ]),
+  pick: generateExpression('pick', allTypes, [
+    { id: 'list', type: 'List' },
+  ]),
+  item: generateExpression('item', allTypes, [
+    { id: 'index', label: 'index', type: 'Integer' },
+    { id: 'thing', label: 'thing', type: ['Array', 'List'] },
+  ]),
+  setitem: generateStatement('setitem', [
+    { id: 'index', label: 'index', type: 'Integer' },
+    { id: 'array', label: 'array', type: 'Array' },
+    { id: 'value', label: 'value', type: allTypes },
+  ]),
+  remove: generateExpression('remove', 'List', [
+    { id: 'thing', label: 'thing', type: allTypes },
+    { id: 'list', label: 'list', type: 'List' },
+  ]),
+  remdup: generateExpression('remdup', 'List', [
+    { id: 'list', label: 'list', type: 'List' },
+  ]),
+  push: generateStatement('push', [
+    { id: 'stack', label: 'stack', type: 'List' },
+    { id: 'thing', label: 'thing', type: allTypes },
+  ]),
+  queue: generateStatement('queue', [
+    { id: 'stack', label: 'stack', type: 'List' },
+    { id: 'thing', label: 'thing', type: allTypes },
+  ]),
+  pop: generateStatement('pop', [
+    { id: 'stack', label: 'stack', type: 'List' },
+  ]),
+  dequeue: generateStatement('dequeue', [
+    { id: 'stack', label: 'stack', type: 'List' },
   ]),
 
   // Commands
