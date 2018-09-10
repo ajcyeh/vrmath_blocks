@@ -5,6 +5,78 @@ var workspace = null;
 var expressionColor = 270;
 var statementColor = 180;
 
+function generateStatement(id, args = [], isPrefixedById = true) {
+  return generateBlock(id, statementColor, null, args, isPrefixedById);
+}
+
+function generateExpression(id, returnType, args = [], isPrefixedById = true) {
+  return generateBlock(id, expressionColor, returnType, args, isPrefixedById);
+}
+
+function generateBlock(id, color, returnType, args, isPrefixedById) {
+  var inputs = args.map(arg => {
+    var object = {
+      align: 'RIGHT',
+      name: arg.id,
+    };
+    if (arg.options) {
+      object.type = 'field_dropdown';
+      object.options = arg.options;
+    } else {
+      object.type = 'input_value';
+      object.check = arg.type;
+    }
+    return object;
+  });
+
+  var tokens = [id];
+  args.forEach((arg, i) => {
+    if (arg.label) {
+      tokens.push(arg.label);
+    }
+    tokens.push('%' + (i + 1));
+  });
+  var message0 = tokens.join(' ');
+
+  var configuration = {
+    colour: color,
+    message0: message0,
+    args0: inputs,
+  };
+
+  var assemble = null;
+  if (returnType) {
+    configuration.output = null;
+    assemble = function(code) {
+      return [code, Blockly.VRMath.ORDER_FUNCTION_CALL];
+    }
+  } else {
+    configuration.previousStatement = null;
+    configuration.nextStatement = null;
+    assemble = function(code) {
+      return code + '\n';
+    }
+  }
+
+  return {
+    configuration: configuration,
+    generator: function(block) {
+      var tokens = [];
+      if (isPrefixedById) {
+        tokens.push(id);
+      }
+      args.forEach(arg => {
+        if (arg.options) {
+          tokens.push(block.getFieldValue(arg.id));
+        } else {
+          tokens.push(Blockly.VRMath.valueToCode(block, arg.id, Blockly.VRMath.ORDER_FUNCTION_CALL));
+        }
+      });
+      return assemble(tokens.join(' '));
+    }
+  };
+}
+
 var blockDefinitions = {
   // Primitives
   integer: {
@@ -61,17 +133,7 @@ var blockDefinitions = {
       return [code, Blockly.VRMath.ORDER_ATOMIC];
     }
   },
-  gensym: {
-    configuration: {
-      colour: expressionColor,
-      output: 'String',
-      message0: 'gensym',
-    },
-    generator: function(block) {
-      var code = 'gensym';
-      return [code, Blockly.VRMath.ORDER_ATOMIC];
-    }
-  },
+  gensym: generateExpression('gensym', 'String'),
 
   // Lists and arrays
   word: {
@@ -170,349 +232,129 @@ var blockDefinitions = {
       return [tokens.join(' '), Blockly.VRMath.ORDER_NONE];
     }
   },
-  array: {
-    configuration: {
-      colour: expressionColor,
-      output: 'Array',
-      message0: 'array %1',
-      args0: [
-        { 
-          type: 'input_value',
-          check: 'Integer',
-          name: 'size',
-        },
-      ]
-    },
-    generator: function(block) {
-      var tokens = ['array'];
-      tokens.push(Blockly.VRMath.valueToCode(block, 'size', Blockly.VRMath.ORDER_ATOMIC));
-      return [tokens.join(' '), Blockly.VRMath.ORDER_NONE];
-    }
-  },
-  listtoarray: {
-    configuration: {
-      colour: expressionColor,
-      output: 'Array',
-      message0: 'listtoarray %1',
-      args0: [
-        { 
-          type: 'input_value',
-          check: 'List',
-          name: 'list',
-        },
-      ]
-    },
-    generator: function(block) {
-      var tokens = ['listtoarray'];
-      tokens.push(Blockly.VRMath.valueToCode(block, 'list', Blockly.VRMath.ORDER_ATOMIC));
-      return [tokens.join(' '), Blockly.VRMath.ORDER_NONE];
-    }
-  },
-  arraytolist: {
-    configuration: {
-      colour: expressionColor,
-      output: 'List',
-      message0: 'arraytolist %1',
-      args0: [
-        { 
-          type: 'input_value',
-          check: 'Array',
-          name: 'array',
-        },
-      ]
-    },
-    generator: function(block) {
-      var tokens = ['arraytolist'];
-      tokens.push(Blockly.VRMath.valueToCode(block, 'array', Blockly.VRMath.ORDER_ATOMIC));
-      return [tokens.join(' '), Blockly.VRMath.ORDER_NONE];
-    }
-  },
-  reverse: {
-    configuration: {
-      colour: expressionColor,
-      output: 'List',
-      message0: 'reverse %1',
-      args0: [
-        { 
-          type: 'input_value',
-          check: 'List',
-          name: 'list',
-        },
-      ]
-    },
-    generator: function(block) {
-      var tokens = ['reverse'];
-      tokens.push(Blockly.VRMath.valueToCode(block, 'list', Blockly.VRMath.ORDER_ATOMIC));
-      return [tokens.join(' '), Blockly.VRMath.ORDER_NONE];
-    }
-  },
-  fput: {
-    configuration: {
-      colour: expressionColor,
-      output: 'List',
-      message0: 'fput thing %1 list %2',
-      args0: [
-        { 
-          type: 'input_value',
-          align: 'RIGHT',
-          name: 'thing',
-        },
-        { 
-          type: 'input_value',
-          align: 'RIGHT',
-          check: 'List',
-          name: 'list',
-        },
-      ]
-    },
-    generator: function(block) {
-      var tokens = ['fput'];
-      tokens.push(Blockly.VRMath.valueToCode(block, 'thing', Blockly.VRMath.ORDER_ATOMIC));
-      tokens.push(Blockly.VRMath.valueToCode(block, 'list', Blockly.VRMath.ORDER_ATOMIC));
-      return [tokens.join(' '), Blockly.VRMath.ORDER_NONE];
-    }
-  },
-  lput: {
-    configuration: {
-      colour: expressionColor,
-      output: 'List',
-      message0: 'lput thing %1 list %2',
-      args0: [
-        { 
-          type: 'input_value',
-          align: 'RIGHT',
-          name: 'thing',
-        },
-        { 
-          type: 'input_value',
-          align: 'RIGHT',
-          check: 'List',
-          name: 'list',
-        },
-      ]
-    },
-    generator: function(block) {
-      var tokens = ['lput'];
-      tokens.push(Blockly.VRMath.valueToCode(block, 'thing', Blockly.VRMath.ORDER_ATOMIC));
-      tokens.push(Blockly.VRMath.valueToCode(block, 'list', Blockly.VRMath.ORDER_ATOMIC));
-      return [tokens.join(' '), Blockly.VRMath.ORDER_NONE];
-    }
-  },
-  combine: {
-    configuration: {
-      colour: expressionColor,
-      output: ['String', 'List'],
-      message0: 'combine %1 %2',
-      args0: [
-        { 
-          type: 'input_value',
-          align: 'RIGHT',
-          name: 'thingA',
-        },
-        { 
-          type: 'input_value',
-          align: 'RIGHT',
-          check: ['List', 'String'],
-          name: 'thingB',
-        },
-      ]
-    },
-    generator: function(block) {
-      var tokens = ['combine'];
-      tokens.push(Blockly.VRMath.valueToCode(block, 'thingA', Blockly.VRMath.ORDER_ATOMIC));
-      tokens.push(Blockly.VRMath.valueToCode(block, 'thingB', Blockly.VRMath.ORDER_ATOMIC));
-      return [tokens.join(' '), Blockly.VRMath.ORDER_NONE];
-    }
-  },
+  array: generateExpression('array', 'Array', [
+    { id: 'size', type: 'Integer' },
+  ]),
+  listtoarray: generateExpression('listtoarray', 'Array', [
+    { id: 'list', type: 'List' },
+  ]),
+  arraytolist: generateExpression('arraytolist', 'List', [
+    { id: 'array', type: 'Array' },
+  ]),
+  reverse: generateExpression('reverse', 'List', [
+    { id: 'list', type: 'List' },
+  ]),
+  fput: generateExpression('fput', 'List', [
+    { id: 'thing', label: 'thing', type: null },
+    { id: 'list', label: 'list', type: 'List' },
+  ]),
+  lput: generateExpression('lput', 'List', [
+    { id: 'thing', label: 'thing', type: null },
+    { id: 'list', label: 'list', type: 'List' },
+  ]),
+  combine: generateExpression('combine', ['String', 'List'], [
+    { id: 'thingA', type: null },
+    { id: 'thingB', type: ['String', 'List'] },
+  ]),
 
   // Commands
-  move: {
-    configuration: {
-      colour: statementColor,
-      previousStatement: null,
-      nextStatement: null,
-      message0: '%1 %2',
-      args0: [
-        {
-          type: 'field_dropdown',
-          name: 'direction',
-          options: [
-            ['forward', 'forward'],
-            ['back', 'back'],
-            ['east', 'east'],
-            ['west', 'west'],
-            ['north', 'north'],
-            ['south', 'south'],
-            ['up', 'up'],
-            ['down', 'down'],
-          ]
-        },
-        {
-          type: 'input_value',
-          align: 'RIGHT',
-          check: ['Integer', 'Real'],
-          name: 'distance',
-        },
-      ]
+  jumpdirection: generateStatement('jump', [
+    { id: 'direction',
+      options: [
+        ['forward', 'jumpforward'],
+        ['back', 'jumpback'],
+        ['east', 'jumpeast'],
+        ['west', 'jumpwest'],
+        ['north', 'jumpnorth'],
+        ['south', 'jumpsouth'],
+        ['up', 'jumpup'],
+        ['down', 'jumpdown'],
+      ],
     },
-    generator: function(block) {
-      var tokens = [];
-      tokens.push(block.getFieldValue('direction'));
-      tokens.push(Blockly.VRMath.valueToCode(block, 'distance', Blockly.VRMath.ORDER_FUNCTION_CALL));
-      return tokens.join(' ') + '\n';
-    }
-  },
-  setpos: {
-    configuration: {
-      colour: statementColor,
-      previousStatement: null,
-      nextStatement: null,
-      message0: 'setpos %1',
-      args0: [
-        {
-          type: 'input_value',
-          align: 'RIGHT',
-          check: 'List',
-          name: 'position',
-        },
-      ]
+    { id: 'value', type: ['Integer', 'Real'], },
+  ], false),
+  move: generateStatement('move', [
+    { id: 'direction',
+      options: [
+        ['forward', 'forward'],
+        ['back', 'back'],
+        ['east', 'east'],
+        ['west', 'west'],
+        ['north', 'north'],
+        ['south', 'south'],
+        ['up', 'up'],
+        ['down', 'down'],
+      ],
     },
-    generator: function(block) {
-      var tokens = ['setpos'];
-      tokens.push(Blockly.VRMath.valueToCode(block, 'position', Blockly.VRMath.ORDER_FUNCTION_CALL));
-      return tokens.join(' ') + '\n';
-    }
-  },
-  setxyz: {
-    configuration: {
-      colour: statementColor,
-      previousStatement: null,
-      nextStatement: null,
-      message0: 'set x %1 y %2 z %3',
-      args0: [
-        {
-          type: 'input_value',
-          align: 'RIGHT',
-          check: ['Integer', 'Real'],
-          name: 'x',
-        },
-        {
-          type: 'input_value',
-          align: 'RIGHT',
-          check: ['Integer', 'Real'],
-          name: 'y',
-        },
-        {
-          type: 'input_value',
-          align: 'RIGHT',
-          check: ['Integer', 'Real'],
-          name: 'z',
-        },
-      ]
+    { id: 'distance', type: ['Integer', 'Real'], },
+  ], false),
+  setpos: generateStatement('setpos', [
+    { id: 'position', type: 'List' }
+  ]),
+  setxyz: generateStatement('setxyz', [
+    { id: 'x', label: 'x', type: ['Integer', 'Real'], },
+    { id: 'y', label: 'y', type: ['Integer', 'Real'], },
+    { id: 'z', label: 'z', type: ['Integer', 'Real'], },
+  ]),
+  jumpdimension: generateStatement('jump', [
+    { id: 'dimension',
+      options: [
+        ['x', 'jumpx'],
+        ['y', 'jumpy'],
+        ['z', 'jumpz'],
+      ],
     },
-    generator: function(block) {
-      var tokens = ['setxyz'];
-      tokens.push(Blockly.VRMath.valueToCode(block, 'x', Blockly.VRMath.ORDER_FUNCTION_CALL));
-      tokens.push(Blockly.VRMath.valueToCode(block, 'y', Blockly.VRMath.ORDER_FUNCTION_CALL));
-      tokens.push(Blockly.VRMath.valueToCode(block, 'z', Blockly.VRMath.ORDER_FUNCTION_CALL));
-      return tokens.join(' ') + '\n';
-    }
-  },
-  setd: {
-    configuration: {
-      colour: statementColor,
-      previousStatement: null,
-      nextStatement: null,
-      message0: 'set %1 %2',
-      args0: [
-        {
-          type: 'field_dropdown',
-          name: 'dimension',
-          options: [
-            ['x', 'x'],
-            ['y', 'y'],
-            ['z', 'z'],
-          ]
-        },
-        {
-          type: 'input_value',
-          align: 'RIGHT',
-          check: ['Integer', 'Real'],
-          name: 'value',
-        },
-      ]
+    { id: 'value', type: ['Integer', 'Real'], },
+  ], false),
+  setdimension: generateStatement('set', [
+    { id: 'dimension',
+      options: [
+        ['x', 'setx'],
+        ['y', 'sety'],
+        ['z', 'setz'],
+      ],
     },
-    generator: function(block) {
-      var tokens = [];
-      tokens.push('set' + block.getFieldValue('dimension'));
-      tokens.push(Blockly.VRMath.valueToCode(block, 'value', Blockly.VRMath.ORDER_FUNCTION_CALL));
-      return tokens.join(' ') + '\n';
-    }
-  },
-  home: {
-    configuration: {
-      colour: statementColor,
-      previousStatement: null,
-      nextStatement: null,
-      message0: 'home',
+    { id: 'value', type: ['Integer', 'Real'], },
+  ], false),
+  home: generateStatement('home'),
+  jump: generateStatement('jump'),
+  jumpon: generateStatement('jumpon'),
+  jumpoff: generateStatement('jumpoff'),
+  turn: generateStatement('turn', [
+    { id: 'direction',
+      options: [
+        ['left', 'left'],
+        ['right', 'right'],
+        ['rollup', 'rollup'],
+        ['rolldown', 'rolldown'],
+        ['tiltleft', 'tiltleft'],
+        ['tiltright', 'tiltright'],
+      ],
     },
-    generator: function(block) {
-      return 'home\n';
-    }
-  },
-  turn: {
-    configuration: {
-      colour: statementColor,
-      previousStatement: null,
-      nextStatement: null,
-      message0: '%1 %2',
-      args0: [
-        {
-          type: 'field_dropdown',
-          name: 'direction',
-          options: [
-            ['left', 'left'],
-            ['right', 'right'],
-            ['rollup', 'rollup'],
-            ['rolldown', 'rolldown'],
-            ['tiltleft', 'tiltleft'],
-            ['tiltright', 'tiltright'],
-          ]
-        },
-        {
-          type: 'input_value',
-          align: 'RIGHT',
-          check: ['Integer', 'Real'],
-          name: 'angle',
-        },
-      ]
-    },
-    generator: function(block) {
-      var tokens = [];
-      tokens.push(block.getFieldValue('direction'));
-      tokens.push(Blockly.VRMath.valueToCode(block, 'angle', Blockly.VRMath.ORDER_FUNCTION_CALL));
-      return tokens.join(' ') + '\n';
-    }
-  },
-  print: {
-    configuration: {
-      colour: statementColor,
-      previousStatement: null,
-      nextStatement: null,
-      message0: 'print %1',
-      args0: [
-        {
-          type: 'input_value',
-          align: 'RIGHT',
-          name: 'value',
-        },
-      ]
-    },
-    generator: function(block) {
-      var value = Blockly.VRMath.valueToCode(block, 'value', Blockly.VRMath.ORDER_FUNCTION_CALL);
-      return 'print ' + value + '\n';
-    }
-  },
+    { id: 'angle', type: ['Integer', 'Real'], },
+  ], false),
+  jumppos: generateStatement('jumppos', [
+    { id: 'position', type: 'List' },
+  ]),
+  lookatpos: generateStatement('lookatpos', [
+    { id: 'position', type: 'List' },
+  ]),
+  jumpxyz: generateStatement('jumpxyz', [
+    { id: 'x', type: ['Integer', 'Real'], },
+    { id: 'y', type: ['Integer', 'Real'], },
+    { id: 'z', type: ['Integer', 'Real'], },
+  ]),
+  lookatxyz: generateStatement('lookatxyz', [
+    { id: 'x', type: ['Integer', 'Real'], },
+    { id: 'y', type: ['Integer', 'Real'], },
+    { id: 'z', type: ['Integer', 'Real'], },
+  ]),
+  setheading: generateStatement('setheading', [
+    { id: 'angle', type: ['Integer', 'Real'], },
+  ]),
+  print: generateStatement('print', [
+    { id: 'value', type: null, },
+  ]),
 };
 
 function initializeBlock(id) {
