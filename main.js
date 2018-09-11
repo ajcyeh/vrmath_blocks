@@ -1,20 +1,27 @@
 // https://developers.google.com/blockly/reference/js/Blockly.Block
 
 var workspace = null;
-var allTypes = ['Array', 'List', 'String', 'Integer', 'Real', 'Boolean'];
+var anyType = ['Array', 'List', 'String', 'Character', 'Integer', 'Real', 'Boolean'];
 
 var expressionColor = 270;
 var statementColor = 180;
 
-function generateStatement(id, args = [], isPrefixedById = true) {
-  return generateBlock(id, statementColor, null, args, isPrefixedById);
+function generateStatement(id, args = [], isPrefixedById = true, arity) {
+  return generateBlock(id, statementColor, null, args, isPrefixedById, arity);
 }
 
-function generateExpression(id, returnType, args = [], isPrefixedById = true) {
-  return generateBlock(id, expressionColor, returnType, args, isPrefixedById);
+function generateExpression(id, returnType, args = [], isPrefixedById = true, arity) {
+  return generateBlock(id, expressionColor, returnType, args, isPrefixedById, arity);
 }
 
-function generateBlock(id, color, returnType, args, isPrefixedById) {
+function generateBlock(id, color, returnType, args, isPrefixedById, arity) {
+  if (arity) {
+    args = [];
+    for (var i = 0; i < arity.count; ++i) {
+      args.push({ id: 'element' + i, type: arity.type });
+    }
+  }
+
   var inputs = args.map(arg => {
     var object = {
       align: 'RIGHT',
@@ -59,7 +66,7 @@ function generateBlock(id, color, returnType, args, isPrefixedById) {
     }
   }
 
-  return {
+  var block = {
     configuration: configuration,
     generator: function(block) {
       var tokens = [];
@@ -76,6 +83,42 @@ function generateBlock(id, color, returnType, args, isPrefixedById) {
       return assemble(tokens.join(' '));
     }
   };
+
+  if (arity) {
+    block.configuration.mutator = 'setArity';
+    block.configuration.extensions = ['addArityMenuItem'];
+    block.vrmath = {
+      arity: arity.count,
+      elementType: arity.type,
+    };
+    block.generator = function(block) {
+      var tokens = [];
+      if (isPrefixedById) {
+        tokens.push(id);
+      }
+      for (var i = 0; i < block.vrmath.arity; ++i) {
+        tokens.push(Blockly.VRMath.valueToCode(block, 'element' + i, Blockly.VRMath.ORDER_COLLECTION));
+      }
+      return assemble(tokens.join(' '));
+    }
+  } else {
+    block.generator = function(block) {
+      var tokens = [];
+      if (isPrefixedById) {
+        tokens.push(id);
+      }
+      args.forEach(arg => {
+        if (arg.options) {
+          tokens.push(block.getFieldValue(arg.id));
+        } else {
+          tokens.push(Blockly.VRMath.valueToCode(block, arg.id, Blockly.VRMath.ORDER_FUNCTION_CALL));
+        }
+      });
+      return assemble(tokens.join(' '));
+    }
+  }
+
+  return block;
 }
 
 var blockDefinitions = {
@@ -137,40 +180,7 @@ var blockDefinitions = {
   gensym: generateExpression('gensym', 'String'),
 
   // Lists and arrays
-  word: {
-    configuration: {
-      colour: expressionColor,
-      output: 'String',
-      message0: 'word %1 %2',
-      mutator: 'setArity',
-      extensions: [
-        'addArityMenuItem',
-      ],
-      args0: [
-        { 
-          type: 'input_value',
-          check: 'String',
-          name: 'element0',
-        },
-        { 
-          type: 'input_value',
-          check: 'String',
-          name: 'element1',
-        },
-      ]
-    },
-    vrmath: {
-      arity: 2,
-      elementType: 'String',
-    },
-    generator: function(block) {
-      var tokens = ['word'];
-      for (var i = 0; i < block.vrmath.arity; ++i) {
-        tokens.push(Blockly.VRMath.valueToCode(block, 'element' + i, Blockly.VRMath.ORDER_COLLECTION));
-      }
-      return [tokens.join(' '), Blockly.VRMath.ORDER_NONE];
-    }
-  },
+  word: generateExpression('word', 'String', [], true, { count: 1, type: 'String' }),
   list: {
     configuration: {
       colour: expressionColor,
@@ -275,20 +285,20 @@ var blockDefinitions = {
   butfirsts: generateExpression('butfirsts', 'List', [
     { id: 'list', type: 'List' },
   ]),
-  pick: generateExpression('pick', allTypes, [
+  pick: generateExpression('pick', anyType, [
     { id: 'list', type: 'List' },
   ]),
-  item: generateExpression('item', allTypes, [
+  item: generateExpression('item', anyType, [
     { id: 'index', label: 'index', type: 'Integer' },
     { id: 'thing', label: 'thing', type: ['Array', 'List'] },
   ]),
   setitem: generateStatement('setitem', [
     { id: 'index', label: 'index', type: 'Integer' },
     { id: 'array', label: 'array', type: 'Array' },
-    { id: 'value', label: 'value', type: allTypes },
+    { id: 'value', label: 'value', type: anyType },
   ]),
   remove: generateExpression('remove', 'List', [
-    { id: 'thing', label: 'thing', type: allTypes },
+    { id: 'thing', label: 'thing', type: anyType },
     { id: 'list', label: 'list', type: 'List' },
   ]),
   remdup: generateExpression('remdup', 'List', [
@@ -296,17 +306,71 @@ var blockDefinitions = {
   ]),
   push: generateStatement('push', [
     { id: 'stack', label: 'stack', type: 'List' },
-    { id: 'thing', label: 'thing', type: allTypes },
+    { id: 'thing', label: 'thing', type: anyType },
   ]),
   queue: generateStatement('queue', [
     { id: 'stack', label: 'stack', type: 'List' },
-    { id: 'thing', label: 'thing', type: allTypes },
+    { id: 'thing', label: 'thing', type: anyType },
   ]),
   pop: generateStatement('pop', [
     { id: 'stack', label: 'stack', type: 'List' },
   ]),
   dequeue: generateStatement('dequeue', [
     { id: 'stack', label: 'stack', type: 'List' },
+  ]),
+
+  // Predicates
+  isword: generateExpression('word?', 'Boolean', [
+    { id: 'thing', type: anyType },
+  ]),
+  islist: generateExpression('list?', 'Boolean', [
+    { id: 'thing', type: anyType },
+  ]),
+  isarray: generateExpression('array?', 'Boolean', [
+    { id: 'thing', type: anyType },
+  ]),
+  isnumber: generateExpression('number?', 'Boolean', [
+    { id: 'thing', type: anyType },
+  ]),
+  isequal: generateExpression('equal?', 'Boolean', [
+    { id: 'thingA', type: anyType },
+    { id: 'thingB', type: anyType },
+  ]),
+  isnotequal: generateExpression('notequal?', 'Boolean', [
+    { id: 'thingA', type: anyType },
+    { id: 'thingB', type: anyType },
+  ]),
+  isempty: generateExpression('empty?', 'Boolean', [
+    { id: 'thing', type: ['String', 'List'] },
+  ]),
+  isbefore: generateExpression('before?', 'Boolean', [
+    { id: 'thingA', type: 'String' },
+    { id: 'thingB', type: 'String' },
+  ]),
+  ismember: generateExpression('member?', 'Boolean', [
+    { id: 'thing', label: 'thing', type: anyType },
+    { id: 'list', label: 'list', type: 'List' },
+  ]),
+  issubstring: generateExpression('substring?', 'Boolean', [
+    { id: 'thingA', type: 'String' },
+    { id: 'thingB', type: 'String' },
+  ]),
+
+  // Queries
+  count: generateExpression('count', 'Integer', [
+    { id: 'thing', type: ['String', 'List'] },
+  ]),
+  ord: generateExpression('ascii', 'String', [
+    { id: 'thing', type: 'Integer' },
+  ]),
+  chr: generateExpression('char', 'String', [
+    { id: 'thing', type: 'Character' },
+  ]),
+  uppercase: generateExpression('uppercase', 'String', [
+    { id: 'thing', type: 'String' },
+  ]),
+  lowercase: generateExpression('lowercase', 'String', [
+    { id: 'thing', type: 'String' },
   ]),
 
   // Commands
@@ -404,9 +468,10 @@ var blockDefinitions = {
   setheading: generateStatement('setheading', [
     { id: 'angle', type: ['Integer', 'Real'], },
   ]),
-  print: generateStatement('print', [
-    { id: 'value', type: null, },
-  ]),
+  print: generateStatement('print', [], true, { count: 1, type: anyType }),
+  type: generateStatement('type', [], true, { count: 1, type: anyType }),
+  show: generateStatement('show', [], true, { count: 1, type: anyType }),
+  cleartext: generateStatement('cleartext'),
 };
 
 function initializeBlock(id) {
