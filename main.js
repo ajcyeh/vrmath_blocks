@@ -181,68 +181,8 @@ var blockDefinitions = {
 
   // Lists and arrays
   word: generateExpression('word', 'String', [], true, { count: 1, type: 'String' }),
-  list: {
-    configuration: {
-      colour: expressionColor,
-      output: 'List',
-      message0: 'list %1 %2',
-      mutator: 'setArity',
-      extensions: [
-        'addArityMenuItem',
-      ],
-      args0: [
-        { 
-          type: 'input_value',
-          name: 'element0',
-        },
-        { 
-          type: 'input_value',
-          name: 'element1',
-        },
-      ]
-    },
-    vrmath: {
-      arity: 2
-    },
-    generator: function(block) {
-      var tokens = ['list'];
-      for (var i = 0; i < block.vrmath.arity; ++i) {
-        tokens.push(Blockly.VRMath.valueToCode(block, 'element' + i, Blockly.VRMath.ORDER_COLLECTION));
-      }
-      return [tokens.join(' '), Blockly.VRMath.ORDER_NONE];
-    }
-  },
-  sentence: {
-    configuration: {
-      colour: expressionColor,
-      output: 'List',
-      message0: 'sentence %1 %2',
-      mutator: 'setArity',
-      extensions: [
-        'addArityMenuItem',
-      ],
-      args0: [
-        { 
-          type: 'input_value',
-          name: 'element0',
-        },
-        { 
-          type: 'input_value',
-          name: 'element1',
-        },
-      ]
-    },
-    vrmath: {
-      arity: 2
-    },
-    generator: function(block) {
-      var tokens = ['sentence'];
-      for (var i = 0; i < block.vrmath.arity; ++i) {
-        tokens.push(Blockly.VRMath.valueToCode(block, 'element' + i, Blockly.VRMath.ORDER_COLLECTION));
-      }
-      return [tokens.join(' '), Blockly.VRMath.ORDER_NONE];
-    }
-  },
+  list: generateExpression('list', 'List', [], true, { count: 2, type: anyType }),
+  sentence: generateExpression('sentence', 'List', [], true, { count: 2, type: anyType }),
   array: generateExpression('array', 'Array', [
     { id: 'size', type: 'Integer' },
   ]),
