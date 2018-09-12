@@ -412,6 +412,42 @@ var blockDefinitions = {
   type: generateStatement('type', [], true, { count: 1, type: anyType }),
   show: generateStatement('show', [], true, { count: 1, type: anyType }),
   cleartext: generateStatement('cleartext'),
+
+  // Turtle Queries
+  position: generateExpression('position', 'List'),
+  getd: generateExpression('get', 'Real', [
+    { id: 'dimension',
+      options: [
+        ['x', 'getx'],
+        ['y', 'gety'],
+        ['z', 'getz'],
+      ],
+    },
+  ], false),
+  heading: generateExpression('heading', 'Real'),
+  meter: generateStatement('meter'),
+  centimeter: generateStatement('centimeter'),
+  setturtle: generateStatement('setturtle', [
+    { id: 'id', type: 'Object' },
+  ]),
+  showturtle: generateStatement('showturtle'),
+  hideturtle: generateStatement('hideturtle'),
+  clean: generateStatement('clean'),
+  clearscreen: generateStatement('clearscreen'),
+  isshown: generateExpression('shown?', 'Boolean'),
+  distanceto: generateExpression('distanceto', 'Real', [
+    { id: 'distanceto', type: 'List' },
+  ]),
+  distancetoxyz: generateExpression('distancetoxyz', 'Real', [
+    { id: 'x', type: ['Integer', 'Real'], },
+    { id: 'y', type: ['Integer', 'Real'], },
+    { id: 'z', type: ['Integer', 'Real'], },
+  ]),
+  distancebetween: generateExpression('distancebetween', 'Real', [
+    { id: 'a', type: 'List' },
+    { id: 'b', type: 'List' },
+  ]),
+  turtle: generateExpression('turtle', 'Object'),
 };
 
 function initializeBlock(id) {
