@@ -7,6 +7,7 @@ var expressionColor = 270;
 var statementColor = 180;
 
 function generateStatement(id, args = [], isPrefixedById = true, arity) {
+  if (id == 'geometry') console.log(isPrefixedById);
   return generateBlock(id, statementColor, null, args, isPrefixedById, arity);
 }
 
@@ -37,7 +38,10 @@ function generateBlock(id, color, returnType, args, isPrefixedById, arity) {
     return object;
   });
 
-  var tokens = [id];
+  var tokens = [];
+  if (id) {
+    tokens.push(id);
+  }
   args.forEach((arg, i) => {
     if (arg.label) {
       tokens.push(arg.label);
@@ -448,6 +452,63 @@ var blockDefinitions = {
     { id: 'b', type: 'List' },
   ]),
   turtle: generateExpression('turtle', 'Object'),
+
+  // Pen and Background
+  geometry: generateStatement(null, [
+    { id: 'mode',
+      options: [
+        ['point', 'point'],
+        ['line', 'line'],
+        ['face', 'face'],
+      ],
+    },
+  ], false),
+  pen: generateStatement('pen', [
+    { id: 'mode',
+      options: [
+        ['up', 'penup'],
+        ['down', 'pendown'],
+      ],
+    },
+  ], false),
+  nextcolor: generateStatement('nextcolor'),
+  nextcoloron: generateStatement('nextcolor', [
+    { id: 'mode',
+      options: [
+        ['on', 'nextcoloron'],
+        ['off', 'nextcoloroff'],
+      ],
+    },
+  ], false),
+  setbackground: generateStatement('setbackground', [
+    { id: 'index', type: 'Integer' },
+  ]),
+  pencolor: generateStatement('pencolor', [
+    { id: 'mode',
+      options: [
+        ['on', 'pencoloron'],
+        ['off', 'pencoloroff'],
+      ],
+    },
+  ], false),
+  setpcname: generateStatement('setpcname', [
+    { id: 'color', type: 'String' },
+  ]),
+  setpencolor: generateStatement('setpencolor', [
+    { id: 'red',   type: ['Integer', 'Real'], label: 'red' },
+    { id: 'green', type: ['Integer', 'Real'], label: 'green' },
+    { id: 'blue',  type: ['Integer', 'Real'], label: 'blue' },
+  ]),
+  setcolord: generateStatement('set', [
+    { id: 'channel',
+      options: [
+        ['red', 'setr'],
+        ['green', 'setg'],
+        ['blue', 'setb'],
+      ],
+    },
+    { id: 'value', type: ['Integer', 'Real'] },
+  ], false),
 };
 
 function initializeBlock(id) {
