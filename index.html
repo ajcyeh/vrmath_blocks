@@ -12,9 +12,11 @@
 </head>
 <body>
 
-<div id="blocklyEditor"></div>
-<div id="generatedSource"></div>
-<button id="generateButton">Generate</button>
+<textarea id="generatedSource"></textarea>
+<div id="left">
+  <div id="blocklyEditor"></div>
+  <button id="generateButton">Generate</button>
+</div>
 
 <xml id="toolbox">
   <category name="Data">
@@ -180,6 +182,25 @@
     <block type="transform"></block>
     <block type="label"></block>
     <block type="viewpoint"></block>
+  </category>
+  <category name="Numeric Operations">
+    <block type="binaryarithmetic"></block>
+    <block type="unaryarithmetic"></block>
+    <block type="abs"></block>
+    <block type="int"></block>
+    <block type="round"></block>
+    <block type="sqrt"></block>
+    <block type="exp"></block>
+    <block type="log10"></block>
+    <block type="ln"></block>
+    <block type="sincostandegrees"></block>
+    <block type="arctandegrees1"></block>
+    <block type="arctandegrees2"></block>
+    <block type="sincostanradians"></block>
+    <block type="arctanradians1"></block>
+    <block type="arctanradians2"></block>
+    <block type="iseq"></block>
+    <block type="rseq"></block>
   </category>
 </xml>
   

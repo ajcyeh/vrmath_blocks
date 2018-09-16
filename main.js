@@ -594,6 +594,142 @@ var blockDefinitions = {
     { id: 'text', type: ['String', 'Label'] },
   ]),
   viewpoint: generateStatement('viewpoint'),
+
+  // Numeric Operations
+  binaryarithmetic: {
+    configuration: {
+      colour: expressionColor,
+      output: ['Integer', 'Real'],
+      inputsInline: true,
+      message0: '%1 %2 %3',
+      args0: [
+        {
+          type: 'input_value',
+          name: 'a',
+          check: ['Integer', 'Real'],
+        },
+        {
+          type: 'field_dropdown',
+          name: 'operator',
+          options: [
+            ['+', '+'],
+            ['-', '-'],
+            ['*', '*'],
+            ['/', '/'],
+            ['^', '^'],
+            ['%', '%'],
+          ]
+        },
+        {
+          type: 'input_value',
+          name: 'b',
+          check: ['Integer', 'Real'],
+        },
+      ]
+    },
+    generator: function(block) {
+      var operator = block.getFieldValue('operator');
+      if (operator == '+' || operator == '-') {
+        precedence = Blockly.VRMath.ORDER_ADDITIVE;
+      } else if (operator == '*' || operator == '/' || operator == '%') {
+        precedence = Blockly.VRMath.ORDER_MULTIPLICATIVE;
+      } else if (operator == '^') {
+        precedence = Blockly.VRMath.ORDER_EXPONENTIATION;
+      } else {
+        throw 'Bad operator: ' + operator;
+      }
+
+      var codeA = Blockly.VRMath.valueToCode(block, 'a', precedence);
+      var codeB = Blockly.VRMath.valueToCode(block, 'b', precedence);
+      var code = codeA + ' ' + operator + ' ' + codeB;
+      
+      return [code, precedence];
+    }
+  },
+  unaryarithmetic: {
+    configuration: {
+      colour: expressionColor,
+      output: ['Integer', 'Real'],
+      inputsInline: true,
+      message0: '- %1',
+      args0: [
+        {
+          type: 'input_value',
+          name: 'a',
+          check: ['Integer', 'Real'],
+        },
+      ]
+    },
+    generator: function(block) {
+      var codeA = Blockly.VRMath.valueToCode(block, 'a', Blockly.VRMath.ORDER_UNARY_SIGN);
+      var code = '-' + codeA;
+      return [code, Blockly.VRMath.ORDER_UNARY_SIGN];
+    }
+  },
+  abs: generateExpression('abs', ['Integer', 'Real'], [
+    { id: 'value', type: ['Integer', 'Real'], },
+  ]),
+  int: generateExpression('int', 'Integer', [
+    { id: 'value', type: ['Integer', 'Real'], },
+  ]),
+  round: generateExpression('round', 'Integer', [
+    { id: 'value', type: ['Integer', 'Real'], },
+  ]),
+  sqrt: generateExpression('sqrt', 'Real', [
+    { id: 'value', type: ['Integer', 'Real'], },
+  ]),
+  exp: generateExpression('exp', 'Real', [
+    { id: 'value', type: ['Integer', 'Real'], },
+  ]),
+  log10: generateExpression('log10', 'Real', [
+    { id: 'value', type: ['Integer', 'Real'], },
+  ]),
+  ln: generateExpression('ln', 'Real', [
+    { id: 'value', type: ['Integer', 'Real'], },
+  ]),
+  sincostandegrees: generateExpression(null, 'Real', [
+    { id: 'operation',
+      options: [
+        ['sin', 'sin'],
+        ['cos', 'cos'],
+        ['tan', 'tan'],
+      ],
+    },
+    { id: 'value', type: ['Integer', 'Real'], },
+  ], false),
+  sincostanradians: generateExpression(null, 'Real', [
+    { id: 'operation',
+      options: [
+        ['radsin', 'radsin'],
+        ['radcos', 'radcos'],
+        ['radtan', 'radtan'],
+      ],
+    },
+    { id: 'value', type: ['Integer', 'Real'], },
+  ], false),
+  arctandegrees1: generateExpression('arctan', 'Real', [
+    { id: 'value', type: ['Integer', 'Real'], },
+  ]),
+  arctandegrees2: generateExpression('arctan', 'Real', [
+    { id: 'x', type: ['Integer', 'Real'], label: 'x' },
+    { id: 'y', type: ['Integer', 'Real'], label: 'y' },
+  ]),
+  arctanradians1: generateExpression('radarctan', 'Real', [
+    { id: 'value', type: ['Integer', 'Real'], },
+  ]),
+  arctanradians2: generateExpression('radarctan', 'Real', [
+    { id: 'x', type: ['Integer', 'Real'], label: 'x' },
+    { id: 'y', type: ['Integer', 'Real'], label: 'y' },
+  ]),
+  iseq: generateExpression('iseq', 'List', [
+    { id: 'first', type: 'Integer', label: 'first' },
+    { id: 'last', type: 'Integer', label: 'last' },
+  ]),
+  rseq: generateExpression('rseq', 'List', [ // TODO: count?
+    { id: 'first', type: 'Integer', label: 'first' },
+    { id: 'last', type: 'Integer', label: 'last' },
+    { id: 'count', type: 'Integer', label: 'count' },
+  ]),
 };
 
 function initializeBlock(id) {
@@ -707,7 +843,8 @@ function setup() {
     localStorage.setItem('vrmath', xml);
 
     var code = Blockly.VRMath.workspaceToCode(workspace);
-    console.log(code);
+    $('#generatedSource').text(code);
+    // console.log(code);
   });
 
   if (localStorage.getItem('vrmath') != null) {

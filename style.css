@@ -1,8 +1,36 @@
+* {
+  box-sizing: border-box;
+}
+
 #blocklyEditor {
-  width: 800px;
-  height: 600px;
+  width: 100%;
+  height: 100%;
 }
 
 #toolbox {
   display: none;
+}
+
+#generatedSource {
+  font-family: monospace;
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  top: 0;
+  width: 300px;
+}
+
+#left {
+  position: fixed;
+  left: 0;
+  right: 300px;
+  bottom: 0;
+  top: 0;
+  background-color: red;
+}
+
+#generateButton {
+  position: absolute;
+  top: 20px;
+  right: 20px;
 }
