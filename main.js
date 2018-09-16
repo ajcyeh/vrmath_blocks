@@ -24,16 +24,24 @@ function generateBlock(id, color, returnType, args, isPrefixedById, arity) {
   }
 
   var inputs = args.map(arg => {
-    var object = {
-      align: 'RIGHT',
-      name: arg.id,
-    };
-    if (arg.options) {
-      object.type = 'field_dropdown';
-      object.options = arg.options;
+    var object;
+    if (arg.id) {
+      object = {
+        align: 'RIGHT',
+        name: arg.id,
+      };
+      if (arg.options) {
+        object.type = 'field_dropdown';
+        object.options = arg.options;
+      } else {
+        object.type = 'input_value';
+        object.check = arg.type;
+      }
     } else {
-      object.type = 'input_value';
-      object.check = arg.type;
+      object = {
+        type: 'input_dummy',
+        name: arg.label,
+      };
     }
     return object;
   });
@@ -160,6 +168,27 @@ var blockDefinitions = {
     },
     generator: function(block) {
       var code = block.getFieldValue('value');
+      return [code, Blockly.VRMath.ORDER_ATOMIC];
+    }
+  },
+  boolean: {
+    configuration: {
+      colour: expressionColor,
+      output: 'Boolean',
+      message0: '%1',
+      args0: [
+        {
+          type: 'field_dropdown',
+          name: 'value',
+          options: [
+            ['true', 'true'],
+            ['false', 'false'],
+          ]
+        },
+      ]
+    },
+    generator: function(block) {
+      var code = block.getFieldValue('value') == 'true';
       return [code, Blockly.VRMath.ORDER_ATOMIC];
     }
   },
@@ -509,6 +538,62 @@ var blockDefinitions = {
     },
     { id: 'value', type: ['Integer', 'Real'] },
   ], false),
+
+  // Pen Queries
+  ispen: generateExpression('pen', 'Boolean', [
+    { id: 'mode',
+      options: [
+        ['up', 'up'],
+        ['down', 'down'],
+      ],
+    },
+    { label: '?' },
+  ]),
+  penmode: generateExpression('penmode', 'String'),
+  getpencolor: generateExpression('pencolor', 'String'),
+  getcolor: generateExpression('color', 'String'),
+
+  // Primitives
+  box: generateStatement('box'),
+  cylinder: generateStatement('cylinder'),
+  cone: generateStatement('cone'),
+  sphere: generateStatement('sphere'),
+  torus: generateStatement('torus'),
+  snout: generateStatement('snout'),
+  dish: generateStatement('dish'),
+  pyramid: generateStatement('pyramid'),
+  rectangulartorus: generateStatement('rectangulartorus'),
+  slopedcylinder: generateStatement('slopedcylinder'),
+  nozzle: generateStatement('nozzle'),
+  elevationgrid: generateStatement('elevationgrid'),
+  extrusion: generateStatement('extrusion'),
+  arc: generateStatement('arc'),
+  pie: generateStatement('pie'),
+  circle: generateStatement('circle'),
+  disk: generateStatement('disk'),
+  rectangle: generateStatement('rectangle'),
+  world: generateStatement('world', [
+    { id: 'url', type: 'String' },
+  ]),
+  picture: generateStatement('picture', [
+    { id: 'url', type: 'String' },
+  ]),
+  video: generateStatement('video', [
+    { id: 'url', type: 'String' },
+  ]),
+  sound: generateStatement('sound', [
+    { id: 'url', type: 'String', label: 'url', },
+    { id: 'enabled', type: 'Boolean', label: 'enabled' },
+    { id: 'loop', type: 'Boolean', label: 'loop' },
+  ]),
+  pointlight: generateStatement('pointlight'),
+  directionallight: generateStatement('directionallight'),
+  spotlight: generateStatement('spotlight'),
+  transform: generateStatement('transform'),
+  label: generateStatement('label', [
+    { id: 'text', type: ['String', 'Label'] },
+  ]),
+  viewpoint: generateStatement('viewpoint'),
 };
 
 function initializeBlock(id) {
