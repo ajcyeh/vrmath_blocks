@@ -1,4 +1,5 @@
 // https://developers.google.com/blockly/reference/js/Blockly.Block
+// https://vrmath2.net/content/logo-guidereference
 
 var workspace = null;
 var anyType = ['Array', 'List', 'String', 'Character', 'Integer', 'Real', 'Boolean'];
@@ -730,6 +731,19 @@ var blockDefinitions = {
     { id: 'last', type: 'Integer', label: 'last' },
     { id: 'count', type: 'Integer', label: 'count' },
   ]),
+
+  // Time
+  getdate: generateExpression('getdate', 'Integer'),
+  getday: generateExpression('getday', 'Integer'),
+  getyear: generateExpression('getyear', 'Integer'),
+  gethours: generateExpression('gethours', 'Integer'),
+  getmilliseconds: generateExpression('getmilliseconds', 'Integer'),
+  getminutes: generateExpression('getminutes', 'Integer'),
+  getmonth: generateExpression('getmonth', 'Integer'),
+  getseconds: generateExpression('getseconds', 'Integer'),
+  gettime: generateExpression('gettime', 'String'),
+  getdatestring: generateExpression('getdatestring', 'String'),
+  gettimestring: generateExpression('gettimestring', 'String'),
 };
 
 function initializeBlock(id) {
