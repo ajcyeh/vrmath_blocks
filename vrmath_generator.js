@@ -46,28 +46,28 @@ Blockly.VRMath.addReservedWords(
   'forward,backward'
 );
 
-Blockly.VRMath.ORDER_ATOMIC = 0;            // 0 "" ...
-Blockly.VRMath.ORDER_COLLECTION = 1;        // tuples, lists, dictionaries
-Blockly.VRMath.ORDER_STRING_CONVERSION = 1; // `expression...`
-Blockly.VRMath.ORDER_MEMBER = 2.1;          // . []
-Blockly.VRMath.ORDER_FUNCTION_CALL = 2.2;   // ()
-Blockly.VRMath.ORDER_EXPONENTIATION = 3;    // **
-Blockly.VRMath.ORDER_UNARY_SIGN = 4;        // + -
-Blockly.VRMath.ORDER_BITWISE_NOT = 4;       // ~
-Blockly.VRMath.ORDER_MULTIPLICATIVE = 5;    // * / // %
-Blockly.VRMath.ORDER_ADDITIVE = 6;          // + -
-Blockly.VRMath.ORDER_BITWISE_SHIFT = 7;     // << >>
-Blockly.VRMath.ORDER_BITWISE_AND = 8;       // &
-Blockly.VRMath.ORDER_BITWISE_XOR = 9;       // ^
-Blockly.VRMath.ORDER_BITWISE_OR = 10;       // |
-Blockly.VRMath.ORDER_RELATIONAL = 11;       // in, not in, is, is not,
-                                            //     <, <=, >, >=, <>, !=, ==
-Blockly.VRMath.ORDER_LOGICAL_NOT = 12;      // not
-Blockly.VRMath.ORDER_LOGICAL_AND = 13;      // and
-Blockly.VRMath.ORDER_LOGICAL_OR = 14;       // or
-Blockly.VRMath.ORDER_CONDITIONAL = 15;      // if else
-Blockly.VRMath.ORDER_LAMBDA = 16;           // lambda
-Blockly.VRMath.ORDER_NONE = 99;             // (...)
+Blockly.VRMath.ORDER_ATOMIC = 0;
+Blockly.VRMath.ORDER_COLLECTION = 1;
+Blockly.VRMath.ORDER_FUNCTION_CALL = 2;
+Blockly.VRMath.ORDER_LAST_PARAMETER = 3;
+Blockly.VRMath.ORDER_ARITY_HIT = 4;
+Blockly.VRMath.ORDER_EXPONENTIATION = 5;
+Blockly.VRMath.ORDER_UNARY_SIGN = 6;
+Blockly.VRMath.ORDER_BITWISE_NOT = 6;
+Blockly.VRMath.ORDER_MULTIPLICATIVE = 7;
+Blockly.VRMath.ORDER_ADDITIVE = 8;
+Blockly.VRMath.ORDER_RELATIONAL = 9;
+Blockly.VRMath.ORDER_BITWISE_SHIFT = 10;
+Blockly.VRMath.ORDER_BITWISE_AND = 11;
+Blockly.VRMath.ORDER_BITWISE_XOR = 12;
+Blockly.VRMath.ORDER_BITWISE_OR = 13;
+Blockly.VRMath.ORDER_RELATIONAL = 14;
+Blockly.VRMath.ORDER_LOGICAL_NOT = 15;
+Blockly.VRMath.ORDER_LOGICAL_AND = 16;
+Blockly.VRMath.ORDER_LOGICAL_OR = 17;
+Blockly.VRMath.ORDER_CONDITIONAL = 18;
+Blockly.VRMath.ORDER_NONE = 99;
+Blockly.VRMath.ORDER_WEAKEST = 100;
 
 Blockly.VRMath.ORDER_OVERRIDES = [
   // (foo()).bar -> foo().bar

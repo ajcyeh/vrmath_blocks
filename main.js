@@ -68,33 +68,28 @@ function generateBlock(id, color, returnType, args, isPrefixedById, arity) {
   var assemble = null;
   if (returnType) {
     configuration.output = returnType;
-    assemble = function(code) {
-      return [code, Blockly.VRMath.ORDER_FUNCTION_CALL];
+    assemble = function(vrmath, code) {
+      var precedence = null;
+      if (vrmath && vrmath.hasOwnProperty('arity') && vrmath.arity != vrmath.naturalArity) {
+        precedence = Blockly.VRMath.ORDER_WEAKEST;
+      } else {
+        precedence = Blockly.VRMath.ORDER_FUNCTION_CALL;
+      }
+      return [code, precedence];
     }
   } else {
     configuration.previousStatement = null;
     configuration.nextStatement = null;
-    assemble = function(code) {
+    assemble = function(vrmath, code) {
+      if (vrmath && vrmath.hasOwnProperty('arity') && vrmath.arity != vrmath.naturalArity) {
+        code = '(' + code + ')';
+      }
       return code + '\n';
     }
   }
 
   var block = {
     configuration: configuration,
-    generator: function(block) {
-      var tokens = [];
-      if (isPrefixedById) {
-        tokens.push(id);
-      }
-      args.forEach(arg => {
-        if (arg.options) {
-          tokens.push(block.getFieldValue(arg.id));
-        } else {
-          tokens.push(Blockly.VRMath.valueToCode(block, arg.id, Blockly.VRMath.ORDER_FUNCTION_CALL));
-        }
-      });
-      return assemble(tokens.join(' '));
-    }
   };
 
   if (arity) {
@@ -102,6 +97,7 @@ function generateBlock(id, color, returnType, args, isPrefixedById, arity) {
     block.configuration.extensions = ['addArityMenuItem'];
     block.vrmath = {
       arity: arity.count,
+      naturalArity: arity.count,
       elementType: arity.type,
     };
     block.generator = function(block) {
@@ -110,9 +106,10 @@ function generateBlock(id, color, returnType, args, isPrefixedById, arity) {
         tokens.push(id);
       }
       for (var i = 0; i < block.vrmath.arity; ++i) {
-        tokens.push(Blockly.VRMath.valueToCode(block, 'element' + i, Blockly.VRMath.ORDER_COLLECTION));
+        var precedence = i == block.vrmath.arity - 1 ? Blockly.VRMath.ORDER_LAST_PARAMETER : Blockly.VRMath.ORDER_FUNCTION_CALL;
+        tokens.push(Blockly.VRMath.valueToCode(block, 'element' + i, precedence));
       }
-      return assemble(tokens.join(' '));
+      return assemble(block.vrmath, tokens.join(' '));
     }
   } else {
     block.generator = function(block) {
@@ -120,14 +117,19 @@ function generateBlock(id, color, returnType, args, isPrefixedById, arity) {
       if (isPrefixedById) {
         tokens.push(id);
       }
-      args.forEach(arg => {
+      for (var [index, arg] of args.entries()) {
+        console.log("arg:", arg);
         if (arg.options) {
           tokens.push(block.getFieldValue(arg.id));
+        } else if (index == args.length - 1) {
+          console.log("arg:", arg);
+          console.log("is last");
+          tokens.push(Blockly.VRMath.valueToCode(block, arg.id, Blockly.VRMath.ORDER_LAST_PARAMETER));
         } else {
           tokens.push(Blockly.VRMath.valueToCode(block, arg.id, Blockly.VRMath.ORDER_FUNCTION_CALL));
         }
-      });
-      return assemble(tokens.join(' '));
+      }
+      return assemble(block.vrmath, tokens.join(' '));
     }
   }
 
@@ -597,6 +599,43 @@ var blockDefinitions = {
   viewpoint: generateStatement('viewpoint'),
 
   // Numeric Operations
+  relational: {
+    configuration: {
+      colour: expressionColor,
+      output: ['Boolean'],
+      inputsInline: true,
+      message0: '%1 %2 %3',
+      args0: [
+        {
+          type: 'input_value',
+          name: 'a',
+          check: ['Integer', 'Real'],
+        },
+        {
+          type: 'field_dropdown',
+          name: 'operator',
+          options: [
+            ['>=', '>='],
+            ['>', '>'],
+            ['<=', '<='],
+            ['<', '<'],
+          ]
+        },
+        {
+          type: 'input_value',
+          name: 'b',
+          check: ['Integer', 'Real'],
+        },
+      ]
+    },
+    generator: function(block) {
+      var operator = block.getFieldValue('operator');
+      var codeA = Blockly.VRMath.valueToCode(block, 'a', Blockly.VRMath.ORDER_RELATIONAL);
+      var codeB = Blockly.VRMath.valueToCode(block, 'b', Blockly.VRMath.ORDER_RELATIONAL);
+      var code = codeA + ' ' + operator + ' ' + codeB;
+      return [code, Blockly.VRMath.ORDER_RELATIONAL];
+    }
+  },
   binaryarithmetic: {
     configuration: {
       colour: expressionColor,
