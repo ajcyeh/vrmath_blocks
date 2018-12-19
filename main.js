@@ -603,6 +603,77 @@ var blockDefinitions = {
   ]),
   viewpoint: generateStatement('viewpoint'),
 
+  // Material Settings
+  setdiffusecolor: generateStatement('setdiffusecolor', [
+    { id: 'red', type: 'Integer', label: 'red' },
+    { id: 'green', type: 'Integer', label: 'green' },
+    { id: 'blue', type: 'Integer', label: 'blue' },
+  ]),
+  setemissivecolor: generateStatement('setemissivecolor', [
+    { id: 'red', type: 'Integer', label: 'red' },
+    { id: 'green', type: 'Integer', label: 'green' },
+    { id: 'blue', type: 'Integer', label: 'blue' },
+  ]),
+  setspecularcolor: generateStatement('setspecularcolor', [
+    { id: 'red', type: 'Integer', label: 'red' },
+    { id: 'green', type: 'Integer', label: 'green' },
+    { id: 'blue', type: 'Integer', label: 'blue' },
+  ]),
+  setambientintensity: generateStatement('setambientintensity', [
+    { id: 'intensity', type: 'Integer' },
+  ]),
+  setshininess: generateStatement('setshininess', [
+    { id: 'intensity', type: 'Integer' },
+  ]),
+  settransparency: generateStatement('settransparency', [
+    { id: 'intensity', type: 'Integer' },
+  ]),
+  setmaterial: generateStatement('setmaterial', [
+    { id: 'set', type: 'Integer', label: 'set' },
+    { id: 'item', type: 'Integer', label: 'item' },
+  ]),
+
+  // Textures
+  setimagetexture: generateStatement('setimagetexture', [
+    { id: 'set', type: 'Integer', label: 'set' },
+    { id: 'item', type: 'Integer', label: 'item' },
+  ]),
+  setiturl: generateStatement('setiturl', [
+    { id: 'url', type: 'String' },
+  ]),
+  setitrepeats: generateStatement('setitrepeats', [
+    { id: 'value', type: 'Boolean' },
+  ]),
+  setitrepeatt: generateStatement('setitrepeatt', [
+    { id: 'value', type: 'Boolean' },
+  ]),
+  setitscale: generateStatement('setitscale', [
+    { id: 's', type: ['Integer', 'Real'], label: 's' },
+    { id: 't', type: ['Integer', 'Real'], label: 't' },
+  ]),
+  setitscales: generateStatement('setitscales', [
+    { id: 'value', type: ['Integer', 'Real'] },
+  ]),
+  setitscalet: generateStatement('setitscalet', [
+    { id: 'value', type: ['Integer', 'Real'] },
+  ]),
+  setittranslation: generateStatement('setittranslation', [
+    { id: 's', type: ['Integer', 'Real'], label: 's' },
+    { id: 't', type: ['Integer', 'Real'], label: 't' },
+  ]),
+  setittranslations: generateStatement('setittranslations', [
+    { id: 'value', type: ['Integer', 'Real'] },
+  ]),
+  setittranslationt: generateStatement('setittranslationt', [
+    { id: 'value', type: ['Integer', 'Real'] },
+  ]),
+  setitrotation: generateStatement('setitrotation', [
+    { id: 'value', type: ['Integer', 'Real'] },
+  ]),
+  removeimagetexture: generateStatement('removeimagetexture', [
+    { id: 'id', type: 'Integer' },
+  ]),
+
   // Numeric Operations
   relational: {
     configuration: {
