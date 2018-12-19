@@ -1,5 +1,6 @@
 // https://developers.google.com/blockly/reference/js/Blockly.Block
 // https://vrmath2.net/content/logo-guidereference
+// https://www.calormen.com/jslogo/
 
 var workspace = null;
 var anyType = ['Array', 'List', 'String', 'Character', 'Integer', 'Real', 'Boolean'];
@@ -7,18 +8,17 @@ var anyType = ['Array', 'List', 'String', 'Character', 'Integer', 'Real', 'Boole
 var expressionColor = 270;
 var statementColor = 180;
 
-function generateStatement(id, args = [], isPrefixedById = true, arity) {
-  if (id == 'geometry') console.log(isPrefixedById);
-  return generateBlock(id, statementColor, null, args, isPrefixedById, arity);
+function generateStatement(id, args = [], isPrefixedById = true, arity = null, isParenthesized = false) {
+  return generateBlock(id, statementColor, null, args, isPrefixedById, arity, isParenthesized);
 }
 
-function generateExpression(id, returnType, args = [], isPrefixedById = true, arity) {
-  return generateBlock(id, expressionColor, returnType, args, isPrefixedById, arity);
+function generateExpression(id, returnType, args = [], isPrefixedById = true, arity = null, isParenthesized = false) {
+  return generateBlock(id, expressionColor, returnType, args, isPrefixedById, arity, isParenthesized);
 }
 
-function generateBlock(id, color, returnType, args, isPrefixedById, arity) {
+function generateBlock(id, color, returnType, args, isPrefixedById, arity, isParenthesized) {
   if (arity) {
-    args = [];
+    // args = [];
     for (var i = 0; i < arity.count; ++i) {
       args.push({ id: 'element' + i, type: arity.type });
     }
@@ -100,37 +100,37 @@ function generateBlock(id, color, returnType, args, isPrefixedById, arity) {
       naturalArity: arity.count,
       elementType: arity.type,
     };
-    block.generator = function(block) {
-      var tokens = [];
-      if (isPrefixedById) {
-        tokens.push(id);
+  }
+
+  block.generator = function(block) {
+    var tokens = [];
+    if (isPrefixedById) {
+      tokens.push(id);
+    }
+
+    for (var [index, arg] of args.entries()) {
+      if (arg.id.startsWith('element')) break;
+      if (arg.options) {
+        tokens.push(block.getFieldValue(arg.id));
+      } else if (index == args.length - 1) {
+        tokens.push(Blockly.VRMath.valueToCode(block, arg.id, Blockly.VRMath.ORDER_LAST_PARAMETER));
+      } else {
+        tokens.push(Blockly.VRMath.valueToCode(block, arg.id, Blockly.VRMath.ORDER_FUNCTION_CALL));
       }
+    }
+
+    if (arity) {
       for (var i = 0; i < block.vrmath.arity; ++i) {
         var precedence = i == block.vrmath.arity - 1 ? Blockly.VRMath.ORDER_LAST_PARAMETER : Blockly.VRMath.ORDER_FUNCTION_CALL;
         tokens.push(Blockly.VRMath.valueToCode(block, 'element' + i, precedence));
       }
-      return assemble(block.vrmath, tokens.join(' '));
     }
-  } else {
-    block.generator = function(block) {
-      var tokens = [];
-      if (isPrefixedById) {
-        tokens.push(id);
-      }
-      for (var [index, arg] of args.entries()) {
-        console.log("arg:", arg);
-        if (arg.options) {
-          tokens.push(block.getFieldValue(arg.id));
-        } else if (index == args.length - 1) {
-          console.log("arg:", arg);
-          console.log("is last");
-          tokens.push(Blockly.VRMath.valueToCode(block, arg.id, Blockly.VRMath.ORDER_LAST_PARAMETER));
-        } else {
-          tokens.push(Blockly.VRMath.valueToCode(block, arg.id, Blockly.VRMath.ORDER_FUNCTION_CALL));
-        }
-      }
-      return assemble(block.vrmath, tokens.join(' '));
+
+    var code = tokens.join(' ');
+    if (isParenthesized) {
+      code = '(' + code + ')';
     }
+    return assemble(block.vrmath, code);
   }
 
   return block;
@@ -447,6 +447,11 @@ var blockDefinitions = {
   print: generateStatement('print', [], true, { count: 1, type: anyType }),
   type: generateStatement('type', [], true, { count: 1, type: anyType }),
   show: generateStatement('show', [], true, { count: 1, type: anyType }),
+  form: generateExpression('form', ['String'], [
+    { id: 'number', label: 'number', type: ['Integer', 'Real'], },
+    { id: 'width', label: 'width', type: ['Integer'], },
+    { id: 'precision', label: 'precision', type: ['Integer'], },
+  ]),
   cleartext: generateStatement('cleartext'),
 
   // Turtle Queries
@@ -636,6 +641,40 @@ var blockDefinitions = {
       return [code, Blockly.VRMath.ORDER_RELATIONAL];
     }
   },
+  andorxor: generateExpression(null, 'Boolean', [
+    { id: 'operation',
+      options: [
+        ['and', 'and'],
+        ['or', 'or'],
+        ['xor', 'xor'],
+      ],
+    },
+  ], false, { count: 2, type: ['Boolean'] }),
+  not: generateExpression('not', ['Boolean'], [
+    { id: 'expr', type: ['Integer'] },
+  ]),
+  bitandorxor: generateExpression(null, ['Integer'], [
+    { id: 'mode',
+      options: [
+        ['bitand', 'bitand'],
+        ['bitor', 'bitor'],
+        ['bitxor', 'bitxor'],
+      ],
+    },
+  ], false, { count: 2, type: ['Integer'] }),
+  bitnot: generateExpression('bitnot', ['Integer'], [
+    { id: 'expr', type: ['Integer'] },
+  ]),
+  ashift: generateExpression('ashift', ['Integer'], [
+    { id: 'bits', type: ['Integer'], label: 'bits' },
+    { id: 'count', type: ['Integer'], label: 'count' },
+  ]),
+  lshift: generateExpression('lshift', ['Integer'], [
+    { id: 'bits', type: ['Integer'], label: 'bits' },
+    { id: 'count', type: ['Integer'], label: 'count' },
+  ]),
+  sum: generateExpression('sum', ['Integer', 'Real'], [], true, { count: 2, type: ['Real', 'Integer'] }),
+  product: generateExpression('product', ['Integer', 'Real'], [], true, { count: 2, type: ['Real', 'Integer'] }),
   binaryarithmetic: {
     configuration: {
       colour: expressionColor,
@@ -753,14 +792,14 @@ var blockDefinitions = {
   arctandegrees2: generateExpression('arctan', 'Real', [
     { id: 'x', type: ['Integer', 'Real'], label: 'x' },
     { id: 'y', type: ['Integer', 'Real'], label: 'y' },
-  ]),
+  ], true, null, true),
   arctanradians1: generateExpression('radarctan', 'Real', [
     { id: 'value', type: ['Integer', 'Real'], },
   ]),
   arctanradians2: generateExpression('radarctan', 'Real', [
     { id: 'x', type: ['Integer', 'Real'], label: 'x' },
     { id: 'y', type: ['Integer', 'Real'], label: 'y' },
-  ]),
+  ], true, null, true),
   iseq: generateExpression('iseq', 'List', [
     { id: 'first', type: 'Integer', label: 'first' },
     { id: 'last', type: 'Integer', label: 'last' },
@@ -770,6 +809,13 @@ var blockDefinitions = {
     { id: 'last', type: 'Integer', label: 'last' },
     { id: 'count', type: 'Integer', label: 'count' },
   ]),
+  random: generateExpression('random', 'Integer', [
+    { id: 'max', type: 'Integer', label: 'max' },
+  ]),
+  rerandom0: generateStatement('rerandom', []),
+  rerandom1: generateStatement('rerandom', [
+    { id: 'seed', type: 'Integer', label: 'seed' },
+  ], true, null, true),
 
   // Time
   getdate: generateExpression('getdate', 'Integer'),
